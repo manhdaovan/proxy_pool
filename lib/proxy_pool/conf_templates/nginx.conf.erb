@@ -1,3 +1,4 @@
+http {
 upstream backend {
 
 <% proxies_pool.each do |proxy| %>
@@ -12,4 +13,6 @@ server {
   location / {
   proxy_pass http://backend;
   }
+}
+
 }

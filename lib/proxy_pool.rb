@@ -1,3 +1,7 @@
+require 'logger'
+
+$logger = Logger.new(STDOUT, ENV['DEBUG'] ? Logger::DEBUG : Logger::INFO)
+
 module ProxyPool
 end
 

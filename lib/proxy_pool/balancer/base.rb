@@ -1,6 +1,4 @@
 require 'erb'
-# require 'excon'
-require 'logger'
 
 module ProxyPool::Balancer
   class Base
@@ -76,6 +74,11 @@ module ProxyPool::Balancer
       restart unless working?
     end
 
+    def execute(*args)
+      $logger.info("Executed: #{args.join(' ')}")
+      system(args.join(' '))
+    end
+
     private
 
     def ensure_paths
@@ -86,7 +89,7 @@ module ProxyPool::Balancer
     end
 
     def copy_conf_file
-      exec('cp', config_tmp_path, config_path)
+      execute('cp', config_tmp_path, config_path)
     end
   end
 end

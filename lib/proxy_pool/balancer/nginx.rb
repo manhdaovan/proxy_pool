@@ -8,13 +8,13 @@ module ProxyPool::Balancer
     def start(*extra_opts)
       init_other_variable
       overwrite_conf_file
-      base_opts = ["--conf-path=#{config_path}"]
-      exec(which, *(extra_opts | base_opts).join(' '))
+      base_opts = [which, '-c', config_path]
+      execute(*(base_opts | extra_opts))
     end
 
     def stop(*extra_opts)
       base_opts = ['-s stop']
-      exec(which, *(extra_opts | base_opts).join(' '))
+      execute(which, *(extra_opts | base_opts).join(' '))
     end
 
     def which

@@ -6,8 +6,9 @@ require 'proxy_pool'
 require 'optparse'
 
 nginx = ProxyPool::Balancer::Nginx.new
-nginx.start
-exit
+puts "VKL"
+puts nginx.start
+puts "VKL22"
 
 def print_help
   puts "proxy_pool, by ManhDV - version #{ProxyPool::Version::VERSION}"
@@ -38,7 +39,7 @@ def params_valid?(options)
   valid
 end
 
-options = { show_version: false, help: false, port: 8080, balaner: 'nginx' }
+options = { show_version: false, help: false, port: 8080, balancer: 'nginx' }
 
 begin
   OptionParser.new do |opts|
@@ -72,7 +73,7 @@ elsif options[:help]
   print_help
 elsif params_valid?(options)
   extra_params = options.map { |k, v| "--#{k}=#{v}" }
-  balancer = if options[:balaner] == 'nginx'
+  balancer = if options[:balancer] == 'nginx'
                ProxyPool::Balancer::Nginx.new(extra_params)
              else
                ProxyPool::Balancer::Haproxy.new(extra_params)
