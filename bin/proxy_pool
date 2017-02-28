@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+
+$LOAD_PATH.unshift(File.expand_path('../lib', File.dirname(__FILE__)))
+require 'proxy_pool'
+require 'optparse'
+
+def print_help
+  puts "proxy_pool, by ManhDV - version #{ProxyPool::Version::VERSION}"
+  puts 'Website: https://github.com/manhdaovan/proxy_pool'
+  puts
+  puts 'Usage: proxy-pool <options>'
+  puts
+  puts 'Input options:'
+  puts '-b balancer  : Balancer type will be used. "nginx" and "haproxy" is supported. Default is "nginx"'
+  puts '-p port      : Port to connect to entry point. Default to 8080'
+  puts '--help       : Show help message'
+  puts '--version    : Show proxy_pool version'
+end
+
+def print_error(msg)
+  puts
+  puts ">>> ERROR: #{msg}"
+end
+
+def params_valid?(options)
+  required_params = []
+  valid           = true
+  required_params.each do |rp|
+    next unless options.fetch(rp, nil).nil?
+    print_error("Required #{rp}")
+    valid = false
+  end
+  valid
+end
+
+options = { show_version: false, help: false, port: 8080, balaner: 'nginx' }
+
+begin
+  OptionParser.new do |opts|
+    opts.banner = 'Usage: proxy_pool <options>'
+    opts.on('-b balancer', String) do |h|
+      options[:balaner] = h
+    end
+
+    opts.on('-p port') do |p|
+      options[:port] = p
+    end
+
+    opts.on('--help') do |_|
+      options[:help] = true
+    end
+
+    opts.on('--version') do |_|
+      options[:show_version] = true
+    end
+  end.parse!
+rescue OptionParser::InvalidArgument, OptionParser::InvalidOption => e
+  print_error(e.message)
+  print_help
+  exit(0)
+end
+
+# Execute command base on input
+if options[:show_version]
+  puts ProxyPool::Version::VERSION
+elsif options[:help]
+  print_help
+elsif params_valid?(options)
+  extra_params = options.map { |k, v| "--#{k}=#{v}" }
+  balancer = if options[:balaner] == 'nginx'
+               ProxyPool::Balancer::Nginx.new(extra_params)
+             else
+               ProxyPool::Balancer::Haproxy.new(extra_params)
+  end
+  balancer.start(extra_params)
+else
+  print_help
+end
