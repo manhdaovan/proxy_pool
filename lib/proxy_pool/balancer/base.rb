@@ -1,7 +1,11 @@
+require 'erb'
+# require 'excon'
+require 'logger'
+
 module ProxyPool::Balancer
   class Base
     CONFIG_PATH          = '/var/lib/%s/%s'.freeze
-    CONFIG_TEMPLATE_PATH = File.expand_path(File.dirname(__FILE__), '../conf_template/%s').freeze
+    CONFIG_TEMPLATE_PATH = "#{File.expand_path(File.dirname(__FILE__) + '../../conf_templates/')}/%s".freeze
     TEST_URL             = 'https://ipinfo.io/ip'.freeze
 
     attr_reader :port
@@ -55,11 +59,11 @@ module ProxyPool::Balancer
     end
 
     def config_template_path
-      format(CONFIG_TEMPLATE_PATH, @conf_file_name)
+      format(CONFIG_TEMPLATE_PATH, @conf_template_file_name)
     end
 
     def balancer_name
-      self.class.name.downcase
+      self.class.name.split('::')[-1].downcase
     end
 
     def working?
@@ -82,7 +86,7 @@ module ProxyPool::Balancer
     end
 
     def copy_conf_file
-      exec('cp', "#{config_tmp_path} #{config_path}")
+      exec('cp', config_tmp_path, config_path)
     end
   end
 end

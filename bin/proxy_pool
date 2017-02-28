@@ -5,6 +5,10 @@ $LOAD_PATH.unshift(File.expand_path('../lib', File.dirname(__FILE__)))
 require 'proxy_pool'
 require 'optparse'
 
+nginx = ProxyPool::Balancer::Nginx.new
+nginx.start
+exit
+
 def print_help
   puts "proxy_pool, by ManhDV - version #{ProxyPool::Version::VERSION}"
   puts 'Website: https://github.com/manhdaovan/proxy_pool'
