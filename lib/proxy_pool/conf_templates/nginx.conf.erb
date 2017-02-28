@@ -1,0 +1,15 @@
+upstream backend {
+
+<% proxies_pool.each do |proxy| %>
+  <%= proxy.info %>
+<% end %>
+
+}
+
+server {
+  listen <%= port %>
+
+  location / {
+  proxy_pass http://backend;
+  }
+}
