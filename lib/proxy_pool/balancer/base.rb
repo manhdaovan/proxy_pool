@@ -8,12 +8,14 @@ module ProxyPool::Balancer
     attr_reader :port
     attr_reader :proxy_sources
 
-    def initialize(port = 8080)
-      @port                    = port
+    def initialize(**options)
+      @port                    = options[:port] || 8080
       @proxy_sources           = []
       @proxies_pool            = []
+      @selected_proxy_sources  = options[:proxy_sources] || ['all']
       @conf_file_name          = ''
       @conf_template_file_name = ''
+      build_proxy_sources
     end
 
     def start(*_options)
@@ -89,6 +91,9 @@ module ProxyPool::Balancer
     end
 
     private
+    def select_all_sources?
+      @selected_proxy_sources.include?('all')
+    end
 
     def ensure_paths
       %w(lib run log).each do |dir|
@@ -105,6 +110,18 @@ module ProxyPool::Balancer
       @proxy_sources.each do |p_src|
         p_src.fetch_proxy
         @proxies_pool += p_src.proxies
+      end
+    end
+
+    def build_proxy_sources
+      if select_all_sources?
+        ProxyPool::ProxySources::Base.descendants.each do |src|
+          @proxy_sources << src.new
+        end
+      else
+        @selected_proxy_sources.each do |src|
+          @proxy_sources << ProxyPool.const_get("ProxyPool::ProxySources::#{src}").new
+        end
       end
     end
   end

@@ -6,10 +6,11 @@ require 'proxy_pool'
 require 'optparse'
 
 # proxy = ProxyPool::ProxySources::Freeproxylist.new(src: 'http://free-proxy-list.net/', max_proxy: 20)
-# puts 'VKL'
+puts 'VKL'
 # proxy.fetch_proxy
 # puts ProxyPool::ProxySources::Base.descendants
-# puts 'VKL22'
+puts ProxyPool.const_get("ProxyPool::ProxySources::Freeproxylist").new.inspect
+puts 'VKL22'
 
 def print_help
   puts "proxy_pool, by ManhDV - version #{ProxyPool::Version::VERSION}"
@@ -44,8 +45,8 @@ def params_valid?(options)
   valid
 end
 
-options         = {show_version: false, help: false}
-meaning_options = {port: 8080, balancer: 'nginx', source: ['all'], number_proxy: 50}
+options         = { show_version: false, help: false }
+meaning_options = { port: 8080, balancer: 'nginx', proxy_sources: ['all'], number_proxy: 50 }
 
 begin
   OptionParser.new do |opts|
@@ -53,7 +54,7 @@ begin
 
     opts.on('-b', '--balancer nginx', String) do |b|
       meaning_options[:balaner] = b
-      unless ['nginx', 'haproxy'].include?(b)
+      unless %w(nginx haproxy).include?(b)
         raise OptionParser::InvalidArgument, 'Only nginx and haproxy is supported.'
       end
     end
@@ -90,11 +91,14 @@ if options[:show_version]
 elsif options[:help]
   print_help
 elsif params_valid?(options)
-  if options[:balancer] == 'nginx'
-    ProxyPool::Balancer::Nginx.new(meaning_options).start
+  balancer = if meaning_options[:balancer] == 'nginx'
+    ProxyPool::Balancer::Nginx.new(meaning_options)
   else
-    ProxyPool::Balancer::Haproxy.new(meaning_options).start
+    ProxyPool::Balancer::Haproxy.new(meaning_options)
   end
+  balancer.start
+  puts "Balancer", balancer.inspect
+
 else
   print_help
 end

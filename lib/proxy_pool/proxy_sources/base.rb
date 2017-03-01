@@ -7,23 +7,17 @@ module ProxyPool::ProxySources
     end
 
     def self.descendants_2string
-      self.descendants.map{|sub_class| sub_class.to_s.split('::')[-1]}
+      descendants.map { |sub_class| sub_class.to_s.split('::')[-1] }
     end
 
     def initialize(** options)
-      @src       = options[:src]
+      @src       = nil
       @proxies   = []
       @max_proxy = options[:max_proxy] || 20
-      check_options
     end
 
     def fetch_proxy
       raise StandardError, "'fetch_proxy' method has not implemented in #{self.class.name}"
-    end
-
-    def check_options
-      return unless @src.nil?
-      raise StandardError, "#{self.class.name} need source to fetch proxy."
     end
   end
 
@@ -58,7 +52,8 @@ module ProxyPool::ProxySources
       "server #{info} #{options_2str};"
     end
 
-    def proxy_2haproxy_format; end
+    def proxy_2haproxy_format;
+    end
 
     def options_2str
       @options.map { |k, v| "#{k}=#{v}" }.join(' ')
