@@ -27,7 +27,6 @@ module ProxyPool::Balancer
     end
 
     def build_conf_file
-      super
       File.open(config_tmp_path, 'w+') do |config_tmp_file|
         config_tmp_file.write(ERB.new(File.read(config_template_path)).result(binding))
       end

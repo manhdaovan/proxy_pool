@@ -5,14 +5,13 @@ module ProxyPool::Balancer
     CONFIG_PATH          = '/var/lib/%s/%s'.freeze
     CONFIG_TEMPLATE_PATH = "#{File.expand_path(File.dirname(__FILE__) + '../../conf_templates/')}/%s".freeze
 
-    attr_reader :port
-    attr_reader :proxy_sources
+    attr_reader :port, :proxy_sources, :proxies_pool
 
     def initialize(**options)
       @port                    = options[:port] || 8080
+      @selected_proxy_sources  = options[:proxy_sources] || ['all']
       @proxy_sources           = []
       @proxies_pool            = []
-      @selected_proxy_sources  = options[:proxy_sources] || ['all']
       @conf_file_name          = ''
       @conf_template_file_name = ''
       build_proxy_sources
@@ -51,12 +50,30 @@ module ProxyPool::Balancer
     def overwrite_conf_file
       ensure_paths
       build_proxies_pool
+      check_conf_files
       build_conf_file
       copy_conf_file
     end
 
+    def working?
+      Excon.get(TEST_URL, proxy: "http://127.0.0.1:#{@port}", read_timeout: 10).status == ProxyPool::HTTP_SUCCESS_CODE
+    rescue
+      false
+    end
+
+    def ensure_running
+      restart unless working?
+    end
+
+    def execute(*args)
+      $logger.info("Executed: #{args.join(' ')}")
+      system(args.join(' '))
+    end
+
+    protected
+
     def build_conf_file
-      ensure_paths
+      raise StandardError, "'build_conf_file' method has not implemented in #{self.class.name}"
     end
 
     def config_path
@@ -75,22 +92,12 @@ module ProxyPool::Balancer
       self.class.name.split('::')[-1].downcase
     end
 
-    def working?
-      Excon.get(TEST_URL, proxy: "http://127.0.0.1:#{@port}", read_timeout: 10).status == ProxyPool::HTTP_SUCCESS_CODE
-    rescue
-      false
-    end
-
-    def ensure_running
-      restart unless working?
-    end
-
-    def execute(*args)
-      $logger.info("Executed: #{args.join(' ')}")
-      system(args.join(' '))
-    end
-
     private
+    def check_conf_files
+      return unless @conf_file_name.empty? || @conf_template_file_name.empty?
+      raise StandardError, "Please set configuration file names in #{self.class.name}"
+    end
+
     def select_all_sources?
       @selected_proxy_sources.include?('all')
     end

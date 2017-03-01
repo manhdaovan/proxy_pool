@@ -1,6 +1,8 @@
-user  nginx;
 worker_processes  1;
-worker_connections  1024;
+events {
+  worker_connections  1024;
+
+}
 
 error_log    /var/log/nginx/error.log;
 
@@ -14,7 +16,7 @@ http {
   }
 
   server {
-    listen <%= port %>
+    listen <%= port %>;
 
     location / {
     proxy_pass http://backend;
