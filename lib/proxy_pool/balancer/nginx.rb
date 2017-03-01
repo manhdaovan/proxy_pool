@@ -1,6 +1,5 @@
 module ProxyPool::Balancer
   class Nginx < ProxyPool::Balancer::Base
-
     def initialize(port = 8080)
       super
       @conf_file_name          = 'nginx.conf'

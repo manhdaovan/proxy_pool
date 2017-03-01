@@ -1,7 +1,7 @@
 module ProxyPool::ProxySources
   class Freeproxylist < ProxyPool::ProxySources::Base
     # Proxy form on source page
-    DOC_FORM_INDEX = {ip: 0, port: 1, code: 2, country: 3, anonymity: 4, google: 5, https: 6, last_check: 7}.freeze
+    DOC_FORM_INDEX = { ip: 0, port: 1, code: 2, country: 3, anonymity: 4, google: 5, https: 6, last_check: 7 }.freeze
 
     def fetch_proxy
       conn = Excon.get(@src)
@@ -12,7 +12,7 @@ module ProxyPool::ProxySources
 
       page.css('#proxylisttable tbody tr').each_with_index do |tr, index|
         break if index > @max_proxy
-        raw_proxy          = tr.css('td').map { |td| td.content }
+        raw_proxy          = tr.css('td').map(&:content)
         proxy_init_options = {
           host: raw_proxy[DOC_FORM_INDEX[:ip]],
           port: raw_proxy[DOC_FORM_INDEX[:port]]

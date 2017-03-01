@@ -1,18 +1,24 @@
+user  nginx;
+worker_processes  1;
+worker_connections  1024;
+
+error_log    /var/log/nginx/error.log;
+
 http {
-upstream backend {
+  upstream backend {
 
-<% proxies_pool.each do |proxy| %>
-  <%= proxy.proxy_2nginx_format %>
-<% end %>
+  <% proxies_pool.each do |proxy| %>
+    <%= proxy.proxy_2nginx_format %>
+  <% end %>
 
-}
-
-server {
-  listen <%= port %>
-
-  location / {
-  proxy_pass http://backend;
   }
-}
+
+  server {
+    listen <%= port %>
+
+    location / {
+    proxy_pass http://backend;
+    }
+  }
 
 }

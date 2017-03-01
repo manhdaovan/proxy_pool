@@ -2,6 +2,14 @@ module ProxyPool::ProxySources
   class Base
     attr_reader :proxies, :src
 
+    def self.descendants
+      ObjectSpace.each_object(Class).select { |klass| klass < self }
+    end
+
+    def self.descendants_2string
+      self.descendants.map{|sub_class| sub_class.to_s.split('::')[-1]}
+    end
+
     def initialize(** options)
       @src       = options[:src]
       @proxies   = []
@@ -21,9 +29,9 @@ module ProxyPool::ProxySources
 
   class Proxy
     TEST_URL           = 'https://ipinfo.io/ip'.freeze
-    SCHEMA_TYPE_HTTP   = 'http'
-    SCHEMA_TYPE_HTTPS  = 'https'
-    SCHEMA_TYPE_SOCKET = 'unix'
+    SCHEMA_TYPE_HTTP   = 'http'.freeze
+    SCHEMA_TYPE_HTTPS  = 'https'.freeze
+    SCHEMA_TYPE_SOCKET = 'unix'.freeze
 
     def initialize(** options)
       @host   = options[:host]
@@ -37,11 +45,11 @@ module ProxyPool::ProxySources
       check_options
     end
 
-    def info
+    def info(include_schema = false)
       case @schema
-      when 'http', 'https'
-        "#{@host}:#{@port}"
-      when 'unix'
+      when SCHEMA_TYPE_HTTP, SCHEMA_TYPE_HTTPS
+        (include_schema ? "#{@schema}://" : '') << "#{@host}:#{@port}"
+      when SCHEMA_TYPE_SOCKET
         "unix:/#{@host}"
       end
     end
@@ -50,8 +58,7 @@ module ProxyPool::ProxySources
       "server #{info} #{options_2str};"
     end
 
-    def proxy_2haproxy_format
-    end
+    def proxy_2haproxy_format; end
 
     def options_2str
       @options.map { |k, v| "#{k}=#{v}" }.join(' ')
@@ -67,10 +74,9 @@ module ProxyPool::ProxySources
     end
 
     def working?
-      Excon.get(TEST_URL, proxy: "http://#{info}", read_timeout: 10).status == ProxyPool::HTTP_SUCCESS_CODE
+      Excon.get(TEST_URL, proxy: info(true), read_timeout: 10).status == ProxyPool::HTTP_SUCCESS_CODE
     rescue
       false
     end
-
   end
 end

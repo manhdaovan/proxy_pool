@@ -16,11 +16,11 @@ module ProxyPool::Balancer
       @conf_template_file_name = ''
     end
 
-    def start(*options)
+    def start(*_options)
       raise StandardError, "'start' method has not implemented in #{self.class.name}"
     end
 
-    def stop(*options)
+    def stop(*_options)
       raise StandardError, "'stop' method has not implemented in #{self.class.name}"
     end
 
@@ -39,11 +39,11 @@ module ProxyPool::Balancer
     # Check proxy in pool by checking proxy's info
     # Eg: host and port with http, and socket path with unix
     def proxy_existed?(proxy)
-      @proxies_pool.map { |p| p.info }.include?(proxy.info)
+      @proxies_pool.map(&:info).include?(proxy.info)
     end
 
     def proxy_source_existed?(proxy_src)
-      @proxy_sources.map { |p_src| p_src.src }.include?(proxy_src.src)
+      @proxy_sources.map(&:src).include?(proxy_src.src)
     end
 
     def overwrite_conf_file
