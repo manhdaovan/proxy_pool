@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'proxy_pool/version'
+require 'proxy_pool'
 
 Gem::Specification.new do |s|
   s.name     = 'proxy_pool'
