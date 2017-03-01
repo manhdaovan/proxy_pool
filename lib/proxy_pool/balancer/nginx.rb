@@ -1,14 +1,15 @@
 module ProxyPool::Balancer
   class Nginx < ProxyPool::Balancer::Base
-    def init_other_variable
+
+    def initialize(port = 8080)
+      super
       @conf_file_name          = 'nginx.conf'
       @conf_template_file_name = 'nginx.conf.erb'
     end
 
     def start(*extra_opts)
-      init_other_variable
       overwrite_conf_file
-      base_opts = [which, '-c', config_path]
+      base_opts = [which, "-c #{config_path}"]
       execute(*(base_opts | extra_opts))
     end
 

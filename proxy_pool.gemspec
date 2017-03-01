@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   eos
 
   s.platform              = Gem::Platform::RUBY
-  s.required_ruby_version = '>= 2.0.0'
+  s.required_ruby_version = '>= 2.1.0'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test}/*`.split("\n")
@@ -28,5 +28,6 @@ Gem::Specification.new do |s|
   s.bindir             = 'bin'
 
   s.add_dependency('excon', '0.55.0')
+  s.add_dependency('nokogiri', '1.7.0.1')
   s.add_development_dependency('rake')
 end

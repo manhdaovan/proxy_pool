@@ -92,6 +92,6 @@ backend proxies_pool
 balance     roundrobin
 
 <% proxies_pool.each do |proxy| %>
-  <%= proxy.info %>
+  <%= proxy.proxy_2haproxy_format %>
 <% end %>
 

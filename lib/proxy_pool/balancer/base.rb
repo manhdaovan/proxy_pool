@@ -4,42 +4,51 @@ module ProxyPool::Balancer
   class Base
     CONFIG_PATH          = '/var/lib/%s/%s'.freeze
     CONFIG_TEMPLATE_PATH = "#{File.expand_path(File.dirname(__FILE__) + '../../conf_templates/')}/%s".freeze
-    TEST_URL             = 'https://ipinfo.io/ip'.freeze
 
     attr_reader :port
-    attr_reader :proxies_pool
+    attr_reader :proxy_sources
 
     def initialize(port = 8080)
       @port                    = port
+      @proxy_sources           = []
       @proxies_pool            = []
       @conf_file_name          = ''
       @conf_template_file_name = ''
     end
 
     def start(*options)
-      raise StandardError, "'start' method has not implement in #{self.class.name}"
+      raise StandardError, "'start' method has not implemented in #{self.class.name}"
     end
 
     def stop(*options)
-      raise StandardError, "'stop' method has not implement in #{self.class.name}"
+      raise StandardError, "'stop' method has not implemented in #{self.class.name}"
     end
 
     def restart
-      raise StandardError, "'restart' method has not implement in #{self.class.name}"
+      raise StandardError, "'restart' method has not implemented in #{self.class.name}"
     end
 
-    def add_proxy(proxy)
+    def add_proxy_sources(proxy_source)
+      @proxy_sources << proxy_source
+    end
+
+    def add_proxy_instance(proxy)
       @proxies_pool << proxy
     end
 
     # Check proxy in pool by checking proxy's info
     # Eg: host and port with http, and socket path with unix
-    def existed?(proxy)
+    def proxy_existed?(proxy)
       @proxies_pool.map { |p| p.info }.include?(proxy.info)
+    end
+
+    def proxy_source_existed?(proxy_src)
+      @proxy_sources.map { |p_src| p_src.src }.include?(proxy_src.src)
     end
 
     def overwrite_conf_file
       ensure_paths
+      build_proxies_pool
       build_conf_file
       copy_conf_file
     end
@@ -65,7 +74,7 @@ module ProxyPool::Balancer
     end
 
     def working?
-      Excon.get(TEST_URL, proxy: "http://127.0.0.1:#{@port}", read_timeout: 10).status == 200
+      Excon.get(TEST_URL, proxy: "http://127.0.0.1:#{@port}", read_timeout: 10).status == ProxyPool::HTTP_SUCCESS_CODE
     rescue
       false
     end
@@ -90,6 +99,13 @@ module ProxyPool::Balancer
 
     def copy_conf_file
       execute('cp', config_tmp_path, config_path)
+    end
+
+    def build_proxies_pool
+      @proxy_sources.each do |p_src|
+        p_src.fetch_proxy
+        @proxies_pool += p_src.proxies
+      end
     end
   end
 end
